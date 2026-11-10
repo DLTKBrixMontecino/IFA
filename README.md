@@ -43,16 +43,34 @@ Claude will call the pipeline tools, reason over the evidence, and deliver a roo
 
 ## Pipeline phases
 
-| Phase | Type | Description |
-|-------|------|-------------|
-| 1 | Tool | `extract_framework_keywords` — scan C# source for `[Keyword]` methods |
-| 2 | Tool | `parse_suite_results` — parse summary + per-test XMLs |
-| 3 | Tool | `consolidate_evidence` — merge keyword + runtime data per failure |
-| 4 | AI | Root-cause analysis over consolidated evidence |
-| 5 | Tool | `find_previous_run` — locate prior run for regression comparison |
-| 6 | AI | Visual screenshot analysis |
-| 7 | AI | Final root-cause write-up (plain English for QEs) |
-| 8 | Tool | `generate_failure_report` — write `FailureAnalysisReport.md` to disk |
+```
+Phase 1  extract_framework_keywords   → keyword catalog from C# source (cached by mtime)
+Phase 2  parse_suite_results          → failed tests + evidence from run folder
+Phase 3  consolidate_evidence         → Phases 1+2 merged per failure; pre-router assigns route:
+         ├─ DocDiff keyword + OUTPUTFILE log       → Phase 7 (diff rows are the evidence)
+         ├─ Unresolved D{VarName} in failing param → Phase 7 (script/data setup issue)
+         ├─ ASSERT/ISEQUAL log entry present       → Phase 7 (expected/actual already known)
+         ├─ Generic "System Error" + screenshot    → Phase 6 (visual analysis needed)
+         └─ Anything else                          → Phase 4 (AI triage required)
+Phase 4  (AI) Triage consolidated evidence
+         ├─ Root cause found     → Phase 7
+         ├─ Suspicious event     → Phase 6
+         └─ Nothing significant  → Phase 5
+Phase 5  find_previous_run  → prior sibling run for regression comparison
+         ├─ Root cause now clear → Phase 7
+         └─ Still inconclusive  → Phase 6
+Phase 6  read_screenshot → AI visual analysis of the exception screenshot
+         (skipped if consolidate_evidence already auto-inlined the image)
+Phase 7  (AI) Final write-up — three sections for QEs:
+         • What the evidence shows — screen, action, verbatim error message
+         • AI Assessment — plain-English cause (product defect / data / environment)
+         • AI Defect Classification — one label from a fixed taxonomy
+Phase 8  generate_failure_report  → writes FailureAnalysisReport.md into the run folder
+```
+
+### Defect classification labels
+
+`Click Failure` · `Connectivity Issue` · `Product Bug` · `System Error` · `Script Error` · `Pre-Req Error` · `Data Issue` · `Duplicate Data` · `Assertion Failure` · `Settings Issue` · `Keyword Issue` · `Pipeline Issue` · `Pipeline Timeout`
 
 ## MCP Tools
 
