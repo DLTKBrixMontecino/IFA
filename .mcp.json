@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ifa-test-analysis": {
+      "command": "node",
+      "args": ["dist/index.js"]
+    }
+  }
+}
