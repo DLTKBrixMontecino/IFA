@@ -33,6 +33,35 @@ The server runs as a stdio MCP transport. Register it in `.mcp.json`:
 
 After any source change, rebuild and reconnect: `npm run build` → `/mcp` → Reconnect in Claude Code.
 
+## Configuration
+
+IFA reads its framework root path from `ifa.config.json` in the project root. This file is gitignored — each user maintains their own copy locally.
+
+**Set your framework path (first-time setup):**
+```
+/set-framework-path C:\your\path\to\CostpointLib
+```
+
+Or edit `ifa.config.json` directly:
+```json
+{
+  "frameworkRootPath": "C:\\your\\path\\to\\CostpointLib"
+}
+```
+
+If the file doesn't exist, IFA falls back to the built-in default:
+```
+C:\TFS\QEAutomation\Selenium\BrowserFramework\Code\BrowserFramework\CostpointLib
+```
+
+## Slash commands
+
+| Command | Description |
+|---------|-------------|
+| `/analyze <suiteResultsPath>` | Run the full pipeline on a suite results folder and produce a Phase 7 write-up |
+| `/set-framework-path <path>` | Set your local CostpointLib root path in `ifa.config.json` |
+| `/recache-keywords` | Force a full re-scan of the C# source tree and refresh the keyword cache |
+
 ## Usage
 
 Just describe what you want in plain English in Claude Code:
