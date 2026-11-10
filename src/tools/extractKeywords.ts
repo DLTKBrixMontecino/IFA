@@ -4,7 +4,20 @@ import { glob } from "glob";
 import { parseCSharpFile, type KeywordInfo } from "../lib/csharpAttributeParser.js";
 import { toWslPath } from "../lib/pathTranslate.js";
 
-const DEFAULT_ROOT = "C:\\TFS\\QEAutomation\\Selenium\\BrowserFramework\\Code\\BrowserFramework\\CostpointLib";
+const BUILTIN_DEFAULT_ROOT = "C:\\TFS\\QEAutomation\\Selenium\\BrowserFramework\\Code\\BrowserFramework\\CostpointLib";
+const CONFIG_PATH = new URL("../../ifa.config.json", import.meta.url).pathname;
+
+function getDefaultRoot(): string {
+  try {
+    if (existsSync(CONFIG_PATH)) {
+      const cfg = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+      if (cfg.frameworkRootPath) return cfg.frameworkRootPath as string;
+    }
+  } catch {
+    // fall through to built-in default
+  }
+  return BUILTIN_DEFAULT_ROOT;
+}
 const CACHE_DIR = ".ifa-cache";
 const CACHE_FILE = "keywords.json";
 
@@ -39,7 +52,7 @@ export interface ExtractKeywordsOutput {
 export async function extractFrameworkKeywords(
   input: ExtractKeywordsInput
 ): Promise<ExtractKeywordsOutput> {
-  const rootPathWindows = input.rootPath ?? DEFAULT_ROOT;
+  const rootPathWindows = input.rootPath ?? getDefaultRoot();
   const rootPath = toWslPath(rootPathWindows);
 
   if (!existsSync(rootPath)) {

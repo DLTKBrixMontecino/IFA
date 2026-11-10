@@ -1,3 +1,4 @@
-node_modules/ 
-dist/ 
-.ifa-cache/ 
+node_modules/
+dist/
+.ifa-cache/
+ifa.config.json
